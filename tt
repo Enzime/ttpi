@@ -1,5 +1,4 @@
-#!/usr/bin/python2.7
-
+#!/usr/bin/python3
 from subprocess import check_output, STDOUT, CalledProcessError, call
 from sys import argv
 from tempfile import mkstemp
@@ -13,8 +12,8 @@ def run(func):
         out = check_output(func, stderr=STDOUT)[:-1]
     except CalledProcessError as o:
         out = o.output[:-1]
-    
-    return out
+
+    return out.decode('utf-8')
 
 ls = run('tmux ls')
 
@@ -32,9 +31,9 @@ if 'windows' in ls:
     if not auto and argv[1] not in names:
         os.write(inp[0], '{}: To be created\n'.format(argv[1]))
 
-    os.write(inp[0], ls)
+    os.write(inp[0], ls.encode('utf-8'))
 else:
-    os.write(inp[0], '{}: To be created\n'.format(argv[1]))
+    os.write(inp[0], b'{}: To be created\n'.format(argv[1]))
 
 os.fsync(inp[0])
 
@@ -42,7 +41,7 @@ index = 0
 if argv[1] in names:
     index = names.index(argv[1])
 
-p = call(['percol', '--initial-index', str(index), inp[1]], stdout=out[0])
+p = call(['peco', '--initial-index', str(index), inp[1]], stdout=out[0])
 
 os.close(inp[0])
 os.close(out[0])
@@ -53,7 +52,7 @@ session = open(out[1]).read().split(':')[0]
 os.remove(out[1])
 
 if not session:
-    print 'no session selected'
+    print('no session selected')
     exit()
 
 if session not in names:
